@@ -7,11 +7,10 @@ categories:
 - integration tests
 ---
 
-In the closing moments of the MiniDebconf in Belo Horizonte, as I made my way
-to the airport to return home, a notification lit up my phone: I had been
-accepted into Google Summer of Code. It was surreal, incredibly exciting news
-that left me buzzing with anticipation.
-
+In the final moments of the MiniDebconf in Belo Horizonte, as I was heading to
+the airport to go back home, a notification popped up on my phone: I had been
+accepted into Google Summer of Code. It was a surreal and incredibly exciting
+moment.
 
 ###### Snapshot: MiniDebconf Belo Horizonte 2024
 ![Small Picture](/assets/images/minidc.jpg)
@@ -51,7 +50,6 @@ more system functionalities and flows, and improving the existing testing
 infrastructure. Additionally, an idea exists for implementing an acceptance
 testing pipeline that replicates a user's workflow, leveraging the full suite
 of kworkflow features.
-
 
 # Conclusion
 
