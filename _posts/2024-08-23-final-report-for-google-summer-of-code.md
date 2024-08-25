@@ -1,5 +1,5 @@
 ---
-title: GSoC - Final Report of Google Summer of Code 2024
+title: GSoC - GSoC24 Final Report
 date: 2024-08-23 21:35:02
 categories:
 - gsoc
@@ -13,10 +13,53 @@ extremely enriching and has significantly advanced my development skills.
 
 # Proposal
 
-My GSoC24 proposal focused on supporting and creating new integration tests for
-**kworkflow**, which previously had only unit tests. Throughout the program, I
-worked on introducing, enhancing, and solidifying these integration tests to
-ensure more effective validation of the project's features.
+My GSoC24 proposal focused on enhancing and expanding the integration tests for
+**kworkflow**, which previously had only unit tests and a starting
+infrastructure for the integration tests. Throughout the program, I worked on
+introducing, enhancing, and solidifying these integration tests to ensure more
+effective validation of the project's features. Additionally, I aimed to make
+the test suite easily expandable by implementing clear standards and robust
+infrastructure. This approach allows future contributors to add new tests with
+minimal effort, ensuring that the suite can grow alongside the project.
+
+# Overall Progress
+
+Throughout my participation in the GSoC24, I achieved significant milestones
+that reflect both the breadth and depth of my contributions.
+
+### Key Achievements
+
+1. **Enhanced Integration Test Coverage**: I focused on making the test
+   infrastructure stronger and more scalable. I improved the existing
+   integration tests and added new ones for important features like `kw ssh`, `kw
+   build`, and `kw deploy`. This significantly increased the range of tested
+   scenarios.
+
+   ![Picture](/assets/images/kw_ssh_example.png)
+
+2. **Adaptation of CI for Integration Tests**: As part of enhancing the testing
+   process, I adapted the GitHub Actions CI workflow to include the execution
+   of integration tests.
+
+   ![Picture](/assets/images/integration_github_ci.png)
+
+3. **Refinement of the kworkflow test script**: During the refinement of the
+   integration tests, the `run_tests.sh` script used to execute the kw tests
+   was updated to include a `--verbose` option. This option aids in debugging by
+   displaying detailed information about the Podman containers, such as real-time
+   status and specific data to identify which container from which distribution is
+   being started.
+
+   ![Picture](/assets/images/run_tests.gif)
+
+   By default, running `./run_tests.sh` without any optopns will execute only unit
+   tests, which helps reduce execution time. An `--all` option was implemented for
+   users who want to run all tests, including time-consuming integration tests.
+   For example, the `kw build` integration test involves kernel compilation, which
+   can be lengthy. If a contributor makes a minor change that doesn't affect `kw
+   build`` functionality, running the full integration tests is unnecessary. This
+   update ensures more efficient test runs by allowing contributors to focus on
+   relevant tests only.
 
 # Challenges and Solutions
 
@@ -43,35 +86,38 @@ the execution of commands with special characters inside the containers. To
 address this, I developed functions to ensure that these commands were
 correctly interpreted by the shell.
 
-I faced several challenges during my Google Summer of Code journey, but they
-were overcome with the support of mentors who were always available to answer
-my questions.
+Throughout my GSoC24 experience, I encountered numerous challenges, but I was
+able to overcome them thanks to the consistent support from my mentors, who
+were always available to address my questions. Beyond the dedicated meetings
+for my project, the weekly discussions with the kworkflow community proved
+extremely helpful. These sessions offered broader insights and helped ensure
+that my work was in line with the community's goals and expectations.
 
 # Blogpost Series Timeline
 
-To provide a detailed overview of the work done during the Google Summer of
-Code, I have prepared a series of blog posts that explore different aspects of
-the **kworkflow** project. Here is a timeline of the posts, with direct links to
+This post is a high-level view of my GSoC24 project. A more detailed and
+technical overview of the work done can be seen in previous posts. I have
+prepared a series of blog posts that explore different aspects of the
+**kworkflow** project. Here is a timeline of the posts, with direct links to
 each one:
 
-1. [Accepted to Google Summer of Code](https://aquilamacedo.github.io/gsoc/kworkflow/integration%20tests/2024/05/03/got-accepted-into-gsoc/)
+1. [Accepted to Google Summer of Code 2024]({{site.url}}/got-accepted-into-gsoc/)
 
-2. [Introduction to Integration Testing in kworkflow ](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/2024/06/26/introduction-to-integration-testing/)
+2. [Introduction to Integration Testing in kworkflow ]({{site.url}}/introduction-to-integration-testing/)
 
-3. [Integration Testing for kw ssh](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/kw-ssh/2024/07/30/integration-for-kw-ssh/)
+3. [Integration Testing for kw ssh]({{site.url}}/integration-for-kw-ssh/)
 
-4. [Integration Testing for kw build](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/kw-build/2024/08/20/integration-for-kw-build/)
-
+4. [Integration Testing for kw build]({{site.url}}/integration-for-kw-build/)
 
 # Contributions
 
 Throughout the project, I created several pull requests (PRs) addressing
 different aspects of kworkflow. Each PR was carefully crafted to enhance
-functionality, increase test coverage, and ensure code robustness. Below are
+functionality, increase test coverage, and/or ensure code robustness. Below are
 some of the most significant PRs:
 
 | Pull Request | N° of Commits | 
-| --- | --- |
+|--------------|:---------------:|
 | [setup: install kernel build dependencies](https://github.com/kworkflow/kworkflow/pull/1108) |4|
 | [tests: integration: device_test: modify kw device integration test to run entirely in container](https://github.com/kworkflow/kworkflow/pull/1135) | 2 |
 | [tests: integration: refactor kw_version_test to run entirely in container](https://github.com/kworkflow/kworkflow/pull/1113) | 1 |
@@ -82,42 +128,61 @@ some of the most significant PRs:
 | [tests: integration: kw_ssh_test: Add integration tests for kw ssh functionality](https://github.com/kworkflow/kworkflow/pull/1116) | 5 |
 | [tests: integration: build_test: add the kw build test](https://github.com/kworkflow/kworkflow/pull/1143) | 3 |
 
+However, these PRs represent only the visible contributions. A significant
+amount of work was done behind the scenes, including researching the best
+approaches, communicating with mentors, gathering feedback, and iterating on
+solutions. This "offline" work was crucial in shaping the direction and quality
+of the contributions.
+
 ### Features in Development: Almost Ready to be Merged
 
 The PRs listed above include features that are actively in development, such as
 tests for the `kw ssh`, `kw build`, and `kw deploy` functionalities. Although
 many of these PRs are already well-structured, they are still undergoing final
 reviews and refinements. A significant portion of the important decisions has
-already been discussed within the team, ensuring that the development remains
-aligned with the project’s goals and needs.
+already been discussed within the kworkflow community, and have the green light
+of the mentors, so I can safely say that the direction of my project is set and
+aligned with kworkflow goals and needs.
 
 # Next Steps
 
 As a long-time contributor to **kworkflow**, I am committed to continuing my
 contributions to the project. Here are the key areas I plan to focus on:
 
-1. **Implementing Acceptance Tests**:
- I plan to develop acceptance tests that will validate multiple functionalities
- in sequence. These tests will ensure that the integration of various features
- works seamlesslyand meets the overall requirements of the project.
-
-2. **Expanding Test Coverage**:
+1. **Expanding even more the Integration Test Coverage**:
  Continuing to expand the test coverage is a priority. I will work on creating
  and refining tests for additional functionalities that have not yet been fully
- covered, ensuring a comprehensive and effective validation process.
+ covered, ensuring a comprehensive and effective validation process. Although
+ this initial phase involved tackling complex and diverse features such as `kw
+ build`, `kw deploy`, `kw device`, and `kw ssh`, which required significant
+ effort due to their intricate infrastructure, this groundwork has paved the way
+ for easier and more straightforward expansion of the test suite. The standards
+ and infrastructure established during this process will streamline the addition
+ and revision of tests, making future coverage enhancements more efficient and
+ scalable.
 
-3. **Migrating to New CI Pipeline**:
+2. **Migrating to New CI Pipeline**:
  An important next step is migrating the integration tests to a new CI pipeline
- developed with **Jenkins** by Marcelo Spessoto, a fellow Google Summer of Code
- 2024 participant working on the kworkflow project. This migration will enhance
- the robustness and continuous verification of project changes. We look forward
- to integrating this new CI pipeline soon.
+ which is being developed with" **Jenkins** by Marcelo Spessoto, a fellow Google
+ Summer of Code 2024 participant working on the kworkflow project. This
+ migration will demand some small tinkering on my end to accommodate the
+ integration tests pipeline in this new infrastructure. Nevertheless, thanks to
+ close communication with my fellow kworkflow contributor, we are confident that
+ this will happen as seamlessly as possible
+
+3. **Implementing Acceptance Tests**:
+ I plan to develop acceptance tests that will validate multiple functionalities
+ in sequence. These tests will ensure that the integration of various features
+ works seamlessly and meets the overall requirements of the project.
 
 4. **Improving Documentation**:
- I will focus on improving the documentation related to the testing processes
- and overall project. This includes updating existing documentation to reflect
- new practices, enhancing clarity, and ensuring that all relevant information is
- accessible and useful to contributors and users alike.
+ I will focus on improving the documentation specifically related to the
+ integration testing processes within the project. This includes updating
+ existing documentation to reflect new practices, enhancing clarity, and
+ ensuring that all relevant information is accessible and useful to contributors
+ and users alike. By providing clear and detailed documentation, the integration
+ testing process will become more transparent and easier for future contributors
+ to understand and build upon.
 
 # Acknowledgments
 
