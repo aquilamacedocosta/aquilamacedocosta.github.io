@@ -102,13 +102,13 @@ prepared a series of blog posts that explore different aspects of the
 **kworkflow** project. Here is a timeline of the posts, with direct links to
 each one:
 
-1. [Accepted to Google Summer of Code 2024]({{site.url}}/got-accepted-into-gsoc/)
+1. [Accepted to Google Summer of Code 2024](https://aquilamacedo.github.io/gsoc/kworkflow/integration%20tests/2024/05/03/got-accepted-into-gsoc/)
 
-2. [Introduction to Integration Testing in kworkflow ]({{site.url}}/introduction-to-integration-testing/)
+2. [Introduction to Integration Testing in kworkflow ](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/2024/06/26/introduction-to-integration-testing/)
 
-3. [Integration Testing for kw ssh]({{site.url}}/integration-for-kw-ssh/)
+3. [Integration Testing for kw ssh](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/kw-ssh/2024/07/30/integration-for-kw-ssh/)
 
-4. [Integration Testing for kw build]({{site.url}}/integration-for-kw-build/)
+4. [Integration Testing for kw build](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/kw-build/2024/08/20/integration-for-kw-build/)
 
 # Contributions
 

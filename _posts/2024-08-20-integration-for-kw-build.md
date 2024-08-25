@@ -48,7 +48,7 @@ solid foundation for writing and running shell script tests efficiently.
 As mentioned in the introductory post about integration testing, **shUnit2**
 offers "magic" functions that simplify the organization and execution of tests.
 For more details about these features, check out the dedicated
-[post]({{site.url}}/introduction-to-integration-testing/).
+[post](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/2024/06/26/introduction-to-integration-testing/).
 
 ## Initial Environment Setup: oneTimeSetUp()
 

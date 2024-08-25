@@ -25,9 +25,9 @@ for integration testing as well.
 # A Brief Overview
 
 In my Google Summer of Code 2024 (GSoC24) project, as detailed in a [previous
-post]({{site.url}}/got-accepted-into-gsoc/), I am developing integration tests
-for the kworkflow project. To facilitate this, It was introduced the
-`--integration` option in the test script:
+post](https://aquilamacedo.github.io/gsoc/kworkflow/integration%20tests/2024/05/03/got-accepted-into-gsoc/),
+I am developing integration tests for the kworkflow project. To facilitate
+this, It was introduced the `--integration` option in the test script:
 
 ```
 ./run_tests.sh --integration
