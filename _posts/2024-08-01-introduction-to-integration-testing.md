@@ -11,57 +11,68 @@ Integration tests are designed to verify that different modules of a system
 work together as expected. They ensure that the interaction between components
 occurs seamlessly and that the system functions correctly as a whole.
 
-# Using shunit2 in Integration Tests??
+# Using shUnit2 in Integration Tests??
 
-Originally, [shunit2](https://github.com/kward/shunit2) was created for unit
+Originally, [shUnit2](https://github.com/kward/shunit2) was created for unit
 testing shell scripts, providing a framework to validate shell functions and
 commands in isolation. Its main features include `oneTimeSetUp()` for setup
 tasks before running tests, and `oneTimeTearDown()` for actions after all
 tests. Methods like `setUp()` and `tearDown()` configure and clean up the
-environment before and after each test. Although shunit2's primary focus is
-unit testing, its flexibility has proven useful for integration testing as
-well.
+environment before and after each test. Although shUnit2's primary focus is
+unit testing (hence the 'Unit' in 'shUnit2'), its flexibility has proven useful
+for integration testing as well.
 
 # A Brief Overview
 
-In my Google Summer of Code (GSoC) project, as detailed in a previous post, I
-am developing integration tests for the kworkflow project. To facilitate this,
-It was introduced the `--integration` option in the test script:
+In my Google Summer of Code 2024 (GSoC24) project, as detailed in a [previous
+post]({{site.url}}/got-accepted-into-gsoc/), I am developing integration tests
+for the kworkflow project. To facilitate this, It was introduced the
+`--integration` option in the test script:
 
 ```
 ./run_tests.sh --integration
 ```
 
 These integration tests run in isolated environments using Podman containers,
-each configured with different Linux distributions (Debian, Fedora, Archlinux).
+each configured with different Linux distributions: **Debian**, **Fedora**,
+**Archlinux**. These three were chosen because they cover a lot of what people
+use in the Linux world. Debian is very stable and widely used, and many other
+distributions are based on it, like **Ubuntu**. This makes Debian a great
+choice for testing in environments that are common across many different
+setups. Fedora is more about using the latest technology, which helps us test
+in newer, more experimental environments. Archlinux is known for always having
+the latest versions of software and being very customizable, allowing us to
+test in flexible setups. By testing on all three, we ensure our software works
+well across a wide range of Linux distributions.
+
 Here’s a closer look at how the process works:
 
-1. **Container Image Building**: Initially, container images are built for each
-   supported distribution. This step ensures that all necessary dependencies
-   are installed and configured within the containers. The images are built from
-   scratch, which involves a setup process that includes installing the kworkflow
-   dependencies.
+1. **Container Image Building**:  Initially, container images are constructed
+   for each supported distribution. These images are built in layers, starting
+   with a base layer from **Docker Hub**, which provides the core operating system
+   environment. On top of this base layer, additional layers are added to install
+   `kw` dependencies and the `kw` itself. This process ensures that all required
+   components are available in the container. After building the images, each test
+   suite customizes the container environment as needed for specific tests. This
+   layered approach allows for efficient and consistent setup of the test
+   environments.
 
-2. **Test Execution**: Once the images are prepared, tests are executed within
-   these containers. This setup verifies that the software performs correctly
-   across various Linux platforms. Each test run is conducted in a fresh container
-   environment to avoid any interference from previous tests.
+2. **Test Execution**: In this step, commands are executed within the
+   containers to simulate real user interactions with `kw`, unlike unit tests
+   that focus on individual functions. Assertions are then made to verify that
+   `kw` performs correctly across various Linux platforms. Each test is run in a
+   fresh container environment to ensure a clean state and prevent any
+   interference from previous tests.
 
-3. **Environment Restoration**: After completing each test suite, containers
-   are restored to their original state. This guarantees that each test begins
-   with a clean, consistent environment, preventing issues related to leftover
-   data or configurations from previous tests.
-
-
-**Initial Execution Time**: The first execution of these integration tests may take
-more than 10 minutes. This delay is due to the time required for Podman to
-build the container images and install the necessary kworkflow dependencies on
-each distribution. Subsequent test runs will be significantly faster because of
-the caching mechanism that speeds up the container build process.
-
+**Initial Execution Time**: The first execution of these integration tests may
+take more than 10 minutes. This delay is due to the time required for Podman to
+fetch the base images (if not already cached), build the container images and
+install the necessary kworkflow dependencies on each distribution. Subsequent
+test runs will be significantly faster because of the caching mechanism that
+speeds up the container build process.
 
 Here’s a snippet from the `tests/integration/utils.sh` script illustrating how
-containers are managed:
+containers are started after the images are built:
 
 ```bash
 # Podman containers are isolated environments designed to run a single
@@ -106,14 +117,13 @@ ends. However, to perform a series of operations in a single container session,
 as the primary process. This keeps the container alive and ready for further
 commands, making it an ideal setup for integration testing.
 
-In this context, the `container_exec` function is crucial for installing the
+In this context, the `container_exec()` function is crucial for installing the
 kworkflow binary within the container. It ensures that the installation uses
-the latest version of the project available in the execution environment. This
-approach guarantees that the tests are performed with the most recent updates,
-including any uncommitted changes.
+the latest version of the project available in the current execution
+environment. This approach guarantees that the tests are performed with the
+current state of the repository, i.e., the kw version we wish to test.
 
 Here’s how the `container_exec()` function works:
-
 
 ```bash
 # Execute a command within a container.
@@ -147,19 +157,20 @@ function container_exec()
 }
 ```
 
-This is one of the most crucial functions in the `utils.sh` file for
-integration tests. It enables the execution of commands directly within the
-test environment container, which is highly useful for managing and validating
-operations during the tests.
+This is one of the most crucial functions in the `tests/integration/utils.sh`
+file for integration tests. It enables the execution of commands directly
+within the test environment container, which is highly useful for managing and
+validating operations during the tests.
 
 # Performance Considerations
 
 The `kw build` command is particularly important in this context, as it can be
-quite time-consuming, especially when kernel compilation is involved. One
-solution under consideration is to run integration tests on just one randomly
-selected Linux distribution. Running the same tests across all three supported
-distributions (**Debian**, **Fedora**, and **Archlinux**) would significantly
-increase the overall testing time.
+quite time-consuming, especially when kernel compilation is involved (`kw
+build` does much more than just compilation). One solution under consideration
+is to run integration tests on just one randomly selected Linux distribution.
+Running the same tests across all three supported distributions (**Debian**,
+**Fedora**, and **Archlinux**) would significantly increase the overall testing
+time.
 
 A future improvement in the CI pipeline could involve identifying which files
 were modified in the commits and executing only the relevant integration tests
@@ -171,8 +182,8 @@ only what is necessary based on the specific changes made to the code.
 
 # Conclusion
 
-The integration testing process for kworkflow, as outlined, helps ensure that
-the software functions correctly across different environments. By leveraging
-Podman containers and a systematic approach to building and testing, we can
-achieve reliable and consistent results, verifying that kworkflow integrates
-smoothly with various Linux distributions.
+The integration testing process for kworkflow, as outlined, ensures that kw
+functions correctly across different environments. By leveraging Podman
+containers and a systematic approach to building and testing, we can achieve
+reliable and consistent results, verifying that kworkflow integrates smoothly
+with various Linux distributions.
