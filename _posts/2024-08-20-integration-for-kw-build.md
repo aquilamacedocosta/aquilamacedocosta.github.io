@@ -8,25 +8,26 @@ categories:
 - kw-build
 ---
 
-The `kw build` command is a versatile tool for building and managing kernel
-compilation. It supports various options, such as displaying build information,
-invoking kernel **menuconfig**, enabling **ccache**, adjusting CPU usage during
-compilation, saving logs, and using the **LLVM** toolchain. Additionally, it
-provides options for cleaning the build environment, customizing **CFLAGS**,
-and compiling specific commits. The command also offers alert notifications and
-verbose mode for detailed debugging information.
+The `kw build` command is a versatile tool that encompasses everything related
+to building and managing Linux kernel images. It supports various options, such
+as displaying build information, invoking kernel **menuconfig**, enabling
+**ccache**, adjusting CPU usage during compilation, saving logs, and using the
+**LLVM** toolchain. Additionally, it provides options for cleaning the build
+environment, customizing **CFLAGS**, and compiling specific commits. The
+command also offers alert notifications and verbose mode for detailed debugging
+information.
 
 # Overcoming the Initial Challenges in kw build Integration Testing
 
-One of the main challenges encountered while building integration tests for `kw
-build` was the significant time required to compile the kernel, a notoriously
-time-consuming task. I configured the integration tests to be triggered on
-*pushes* and *pull requests*. However, as the number of tests increased, the
-execution time on **GitHub Actions**' CI also grew, eventually becoming
-impractical. The primary reason for this was that the tests were executed
-across three different distributions (**Debian**, **Fedora**, **Arch Linux**).
-This meant that each test had to be run in all three distros, which overloaded
-the execution time.
+One of the main challenges I've encountered while building integration tests
+for `kw build` was the significant time required to compile the kernel, a
+notoriously time-consuming task. I configured the integration tests to be
+triggered on *pushes* and *pull requests*. However, as the number of tests
+increases, the execution time on **GitHub Actions**' CI also grows, which
+eventually will become impractical. The primary reason for this was that the
+tests were executed across three different distributions (**Debian**,
+**Fedora**, **Arch Linux**). This meant that each test had to be run in all
+three distros, which overloaded the execution time.
 
 Given the limitations of the machines available on **GitHub Actions**, which
 are not robust enough to handle the workload required to compile the kernel in
@@ -36,29 +37,72 @@ that randomly selects one of these three distros for each test run. This allows
 us to test `kw build` in different environments while significantly reducing
 the time and resources consumed by CI.
 
-# Structured Testing Approach with Podman and shunit2
+# Structured Testing Approach with Podman and shUnit2
 
 The integration testing framework for the `kw build` feature is built using
 Podman Containers, which allows us to simulate different environments in an
 isolated and controlled manner. To ensure that the functionalities of `kw
-build` are thoroughly tested, the **shunit2** framework is used, providing a
+build` are thoroughly tested, the **shUnit2** framework is used, providing a
 solid foundation for writing and running shell script tests efficiently.
 
-As mentioned in the introductory post about integration testing, **shunit2**
+As mentioned in the introductory post about integration testing, **shUnit2**
 offers "magic" functions that simplify the organization and execution of tests.
-For more details about these features, check out the dedicated post [on this
-topic](https://aquilamacedo.github.io/gsoc/kworkflow/integration-tests/2024/06/26/introduction-to-integration-testing/).
+For more details about these features, check out the dedicated
+[post]({{site.url}}/introduction-to-integration-testing/).
 
 ## Initial Environment Setup: oneTimeSetUp()
 
-Before any test is executed, it's crucial to set up the environment correctly
-to ensure everything is in order. For the integration tests of `kw build`, this
-setup is done through the `oneTimeSetUp()` function. The idea behind this
-function is to run it once before any other, setting up the test environment,
-choosing a random Linux distribution, cloning the **mainline** Kernel
-repository, and installing the necessary dependencies. Here's how this is done:
+Before executing any tests, it's crucial to correctly set up the environment to
+ensure everything is in order. For the integration tests of `kw build`, this
+setup is managed by the `oneTimeSetUp()` function. This special function is
+designed to run once before any test functions (i.e., any function prefixed
+with test_). It ensures the test environment is properly configured by
+selecting a random Linux distribution, cloning the **mainline** Kernel
+repository, and installing the necessary dependencies. Here’s a detailed look
+at how this setup is accomplished:
 
-![Picture](/assets/images/kw_build_onetimesetup.png)
+```bash
+declare -g CLONED_KERNEL_TREE_PATH_HOST
+declare -g TARGET_RANDOM_DISTRO
+declare -g KERNEL_TREE_PATH_CONTAINER
+declare -g CONTAINER
+
+function oneTimeSetUp()
+{
+  local url_kernel_repo_tree='https://github.com/torvalds/linux'
+
+  # Select a random distro for the tests
+  TARGET_RANDOM_DISTRO=$(select_random_distro)
+  CLONED_KERNEL_TREE_PATH_HOST="$(mktemp --directory)/linux"
+  CONTAINER="kw-${TARGET_RANDOM_DISTRO}"
+
+  # The VERBOSE variable is set and exported in the run_tests.sh script based
+  # on the command-line options provided by the user. It controls the verbosity
+  # of the output during the test runs.
+  setup_container_environment "$VERBOSE" 'build' "$TARGET_RANDOM_DISTRO"
+
+  # Install kernel build dependencies
+  container_exec "$CONTAINER" 'yes | ./setup.sh --install-kernel-dev-deps > /dev/null 2>&1'
+  if [[ "$?" -ne 0 ]]; then
+    complain "Failed to install kernel build dependencies for ${TARGET_RANDOM_DISTRO}"
+    return 22 # EINVAL
+  fi
+
+  git clone --depth 5 "$url_kernel_repo_tree" "$CLONED_KERNEL_TREE_PATH_HOST" > /dev/null 2>&1
+  if [[ "$?" -ne 0 ]]; then
+    complain "Failed to clone ${url_kernel_repo_tree}"
+    if [[ -n "$CLONED_KERNEL_TREE_PATH_HOST" ]]; then
+      if is_safe_path_to_remove "$CLONED_KERNEL_TREE_PATH_HOST"; then
+        rm --recursive --force "$CLONED_KERNEL_TREE_PATH_HOST"
+      else
+        complain "Unsafe path: ${CLONED_KERNEL_TREE_PATH_HOST} - Not removing"
+      fi
+    else
+      complain 'Variable CLONED_KERNEL_TREE_PATH_HOST is empty or not set'
+    fi
+  fi
+}
+```
 
 This method not only prepares the test environment but also establishes a solid
 foundation for the subsequent tests to be executed efficiently.
@@ -70,8 +114,8 @@ but with a different approach compared to the `oneTimeSetUp()`. While
 `oneTimeSetUp()` handles tasks that need to be executed only once before all
 tests, such as setting up the base environment and cloning the mainline kernel
 repository on the host machine, `setUp()` is called before each individual test.
-It ensures that the environment is properly configured for the specific test
-that will be executed.
+It contains the sequence of tasks that need to be done before every test in the
+test suite (in this case, the `kw build` integration test suite).
 
 ```bash
 function setUp()
@@ -99,7 +143,6 @@ entire **mainline** kernel repository can be time-consuming.
 To ensure that the cloning process is quick and efficient, we opted to clone
 only the 5 most recent commits from the **mainline** kernel repository. This is
 done using the following command:
-
 
 ```bash
 git clone --depth 5 --quiet "$url_kernel_repo_tree" "$CLONED_KERNEL_TREE_PATH_HOST"
@@ -198,7 +241,29 @@ integrity of the tests.
 
 Let's delve into more details about the standard test for the `kw build` tool.
 
-![Picture](/assets/images/test_kernel_build.png)
+```bash
+function test_kernel_build()
+{
+  local kw_build_cmd
+  local build_status
+  local build_result
+  local build_status_log
+
+  kw_build_cmd='kw build'
+  container_exec "$CONTAINER" "cd ${KERNEL_TREE_PATH_CONTAINER} && ${kw_build_cmd} > /dev/null 2>&1"
+  assert_equals_helper "kw build failed for ${CONTAINER}" "($LINENO)" 0 "$?"
+
+  # Retrieve the build status log from the database
+  build_status_log=$(container_exec "$CONTAINER" "sqlite3 ~/.local/share/kw/kw.db \"SELECT * FROM statistics_report\" | tail --lines=1")
+
+  # Extract the build status and result from the log
+  build_status=$(printf '%s' "$build_status_log" | cut --delimiter='|' --fields=2)
+  assert_equals_helper "Build status check failed for ${CONTAINER}" "$LINENO" 'build' "$build_status"
+
+  build_result=$(printf '%s' "$build_status_log" | cut --delimiter='|' --fields=3)
+  assert_equals_helper "Build result check failed for ${CONTAINER}" "$LINENO" 'success' "$build_result"
+}
+```
 
 The `test_kernel_build()` function performs several checks to ensure that the
 kernel build inside the container was successful.
@@ -213,10 +278,9 @@ assert_equals_helper "kw build failed for ${CONTAINER}" "($LINENO)" 0 "$?"
 
 First, the `kw_build_cmd` variable stores the `kw build` command, which is the
 tool being tested. Then, the command is executed inside the container using the
-`container_exec()` function. This function ensures that the container
-environment is prepared for command execution by navigating to the mainline
-kernel repository directory in the container `KERNEL_TREE_PATH_CONTAINER` and
-running the build command.
+`container_exec()` function. In this case, the function will navigate to the
+mainline kernel repository directory (located at `KERNEL_TREE_PATH_CONTAINER`
+and run the build command.
 
 The output of this command is redirected to `/dev/null` to avoid interfering
 with the test log.
@@ -224,8 +288,9 @@ with the test log.
 ### Verifying the Return Value `$?`
 
 The check for the return value `$?` of the `kw build` command is performed
-immediately after execution. If the return value is not zero, indicating a
-failure, the test fails, and an error message is generated.
+immediately after execution with the `assert_equals_helper` function. If the
+return value is not zero, indicating a failure, the test fails generating the
+error message `kw build failed for <container>`
 
 ### Verifying the Build Status in the Database
 
@@ -234,19 +299,16 @@ build_status_log=$(container_exec "$CONTAINER" "sqlite3 ~/.local/share/kw/kw.db 
 ```
 
 After the execution of the `kw build` command, the next step is to verify
-whether the kernel build process was correctly recorded in the `kw.db` database.
-This database is where the kw tool stores logs and statistics about executions.
-The `container_exec` function is used again to execute an SQL command within the
-container, retrieving the most recent log from the `statistics_report` table.
+whether the kernel build process was correctly recorded in the `kw.db`
+database. This database is where kw stores logs and statistics about
+executions. The `container_exec` function is used again to execute an SQL
+command within the container, retrieving the most recent log from the
+`statistics_report` table.
 
 The `statistics_report` table contains detailed information about each build
 performed, including the build status and the final result. For example:
 
 ![Picture](/assets/images/db_verify.png)
-
-The data retrieved from the database is processed to extract the build status
-and result. Using the `cut` command, the build status is extracted from the
-second column of the log, and the final result from the third column.
 
 ```bash
 build_status=$(printf '%s' "$build_status_log" | cut --delimiter='|' --fields=2)
@@ -255,6 +317,9 @@ assert_equals_helper "Build status check failed for ${CONTAINER}" "$LINENO" 'bui
 build_result=$(printf '%s' "$build_status_log" | cut --delimiter='|' --fields=3)
 assert_equals_helper "Build result check failed for ${CONTAINER}" "$LINENO" 'success' "$build_result"
 ```
+The data retrieved from the database is processed to extract the build status
+and result. Using the `cut` command, the build status is extracted from the
+second column of the log, and the final result from the third column.
 
 These values are then compared with the expected ones. The status should be
 equal to build, indicating that the build process was started and recorded
@@ -272,15 +337,15 @@ overloading your system while performing other tasks, you can use the command:
 kw b --cpu-scaling=50
 ```
 
-This option adjusts the **CPU** utilization according to the specified
-percentage, allowing you to balance the compilation performance with the
-overall system load.
+In rough terms, this option adjusts the percentage of the **CPU** the kernel
+compilation will use, allowing you to balance the compilation performance with
+the overall system load.
 
-Testing this functionality differs from others because we don’t need to compile
-the kernel completely to verify if the `--cpu-scaling` option works as
-expected. The goal here is to check if the **CPU** is indeed being used in the
-defined proportion (in this case, 50%). The testing approach is as follows:
-
+Testing this functionality of `kw build` differs from others because we don’t
+need to compile the kernel completely to verify if the `--cpu-scaling` option
+works as expected. The goal here is to check if the **CPU** is indeed being
+used in the defined proportion (in this case, 50%). The testing approach is as
+follows:
 
 ```bash
 function test_kernel_build_cpu_scaling_option()
@@ -295,12 +360,31 @@ function test_kernel_build_cpu_scaling_option()
 }
 ```
 
-Before starting the containers, we create a `Containerfile` for each supported
-Linux distribution (**Debian**, **Fedora**, and **Archlinux**). Using the
-Debian distribution as an example, here’s how the test is configured in the
+Note that `kw_build_cpu_scaling_monitor` is called as a program/function
+defined in the container. So, before starting the containers, we install
+`kw_build_cpu_scaling_monitor` using a `Containerfile` for each supported Linux
+distribution (**Debian**, **Fedora**, and **Archlinux**). Using the Debian
+distribution as an example, here’s how the test is configured in the
 `Containerfile_debian`:
 
-![Picture](/assets/images/containerfile_debian.png)
+```bash
+FROM docker.io/library/debian
+
+RUN apt update -y && apt upgrade -y && apt install git -y
+
+COPY ./clone_and_install_kw.sh .
+
+RUN bash ./clone_and_install_kw.sh
+
+# Copy scripts from the "scripts/" folder to a temporary directory
+COPY scripts/ /tmp/scripts/
+
+# Grant execution permissions to the copied scripts
+RUN chmod +x /tmp/scripts/*
+
+# Move the scripts to /bin
+RUN mv /tmp/scripts/* /bin/
+```
 
 For context, the kworkflow project directory structure is as follows:
 
@@ -316,9 +400,10 @@ feature. The main idea is to calculate the CPU usage while the `kw build
 --cpu-scaling 50` command is running to check if the feature is functioning
 correctly.
 
-To analyze the code, let's break it down into parts.
+To analyze the code inside the `kw_build_cpu_scaling_monitor` script, let's
+break it down into parts.
 
-### 1. Introduction and Initial Setup 
+**1. Introduction and Initial Setup**
 
 First, we define the essential arguments and variables for the script. This
 includes the `--cpu-scaling` option, which determines the percentage of CPU to be
@@ -337,7 +422,7 @@ declare -g CPU_USAGE_FILE='/tmp/cpu_usage.txt'
 declare -g KW_BUILD_CMD="kw build --cpu-scaling ${CPU_SCALING}"
 ```
 
-### 2. CPU Usage Monitoring 
+**2. CPU Usage Monitoring**
 
 In this section, we monitor the CPU usage during the execution of `kw build`.
 We use a function that collects data from the **CGROUP** filesystem,
@@ -373,7 +458,7 @@ function monitor_cpu_usage()
 }
 ```
 
-### 3. CPU Usage Average Calculation
+**3. CPU Usage Average Calculation**
 
 Here, the `calculate_avg_cpu_usage()` function reads the collected values and
 calculates the average CPU usage during the build proces
@@ -399,11 +484,15 @@ function calculate_avg_cpu_usage()
 }
 ```
 
-### 4. Verification and Validation
+**4. Verification and Validation**
 
 In this step, we compare the average CPU usage obtained with the expected value
-(in this case, 50%). If it is outside the acceptable error margin, the test
-fails.
+(in this case, 50%). It's important to consider an acceptable error margin in
+this comparison. CPU time may vary due to several factors such as warming up,
+context switching, and other system activities. These variations can influence
+the results, so allowing for a small margin of error helps avoid flaky tests.
+If the average CPU usage falls outside this margin, the test will fail,
+ensuring that we account for any variability in the CPU performance.
 
 ```bash
 function check_cpu_usage()
@@ -426,7 +515,7 @@ function check_cpu_usage()
 }
 ```
 
-### 5. Cancel Build Process
+**5. Cancel Build Process**
 
 To prevent the build process from continuing after monitoring, the script
 terminates all related build processes using `pstree` to find all subprocesses.
@@ -453,7 +542,7 @@ function cancel_build_processes()
 }
 ```
 
-### 6. Script Execution
+**6. Script Execution**
 
 Finally, the script runs the kw build command in the background, monitors CPU
 usage, calculates the average, checks if it is within the error margin, and
@@ -477,10 +566,9 @@ check_cpu_usage "$avg_cpu_usage"
 rm $CPU_USAGE_FILE
 ```
 
-### Summary of Testing kw build with –cpu-scaling option
+### Validating the workflow with assert_equals_helper
 
 Returning to our cpu-scaling option test function:
-
 
 ```bash
 function test_kernel_build_cpu_scaling_option()
@@ -495,25 +583,29 @@ function test_kernel_build_cpu_scaling_option()
 }
 ```
 
-#### Validating with assert_equals_helper
-
 The test runs inside a container, where the script monitors CPU usage while `kw
-build --cpu-scaling 50` is executed. The check_cpu_usage function compares the
-average CPU usage with the expected value and, based on this, returns 0
+build --cpu-scaling 50` is executed. The `check_cpu_usage` function compares
+the average CPU usage with the expected value and, based on this, returns 0
 (**success**) or 1 (**failure**). The result is then verified by
 `assert_equals_helper`, ensuring that the behavior is as expected.
 
 With this, we conclude the validation of the CPU scaling feature. If the
-check_cpu_usage function returns 0, the test is considered successful,
+`check_cpu_usage()` function returns 0, the test is considered successful,
 validating that the CPU scaling functionality of kw build is working correctly.
 
 # Conclusion
 
-Integration testing for `kw build` is crucial to ensure the tool's robustness and
-reliability, especially when dealing with different environments and various
-configuration options. The adoption of **Podman** Containers and the **shunit2**
-framework allowed for a structured and efficient approach to these tests.
-Additionally, optimizing the testing environment and rigorously checking
-results ensure that `kw build` continues to function as expected, even under
-varying conditions. Adjusting the test execution strategy to reduce time and
-resource consumption was a crucial decision for the project.
+`kw build` is one of the core features of `kw`, so integration testing for it is
+crucial to ensure the tool's robustness and reliability, especially when
+dealing with different environments and various configuration options. The
+adoption of **Podman** Containers and the **shUnit2** framework allowed for a
+structured and efficient approach to these tests. Additionally, optimizing the
+testing environment and rigorously checking results ensure that `kw build`
+continues to function as expected, even under varying conditions. Adjusting the
+test execution strategy to reduce time and resource consumption was a critical
+decision for the project.
+
+Furthermore, the foundational work on the infrastructure for testing `kw build`
+has been laid. This will facilitate future expansions of the testing suite,
+making it easier to test other feature workflows and ensure comprehensive
+coverage across the tool.
