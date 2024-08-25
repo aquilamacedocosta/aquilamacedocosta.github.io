@@ -1,5 +1,5 @@
 ---
-title: GSoC - GSoC24 Final Report
+title: GSoC - Final Report of Google Summer of Code 2024
 date: 2024-08-23 21:35:02
 categories:
 - gsoc
@@ -52,14 +52,15 @@ that reflect both the breadth and depth of my contributions.
 
    ![Picture](/assets/images/run_tests.gif)
 
-   By default, running `./run_tests.sh` without any optopns will execute only unit
-   tests, which helps reduce execution time. An `--all` option was implemented for
-   users who want to run all tests, including time-consuming integration tests.
-   For example, the `kw build` integration test involves kernel compilation, which
-   can be lengthy. If a contributor makes a minor change that doesn't affect `kw
-   build`` functionality, running the full integration tests is unnecessary. This
-   update ensures more efficient test runs by allowing contributors to focus on
-   relevant tests only.
+   By default, running `./run_tests.sh` without any options will execute only unit
+   tests, which helps reduce execution time. For users who want to run all tests,
+   including time-consuming integration tests, an `--all` option was implemented.
+   Additionally, the `--integration` option allows users to specifically run only
+   the integration tests. For example, the `kw build` integration test involves
+   kernel compilation, which can be lengthy. If a contributor makes a minor change
+   that doesn't affect `kw build` functionality, running the full integration tests
+   is unnecessary. These options ensure more efficient test runs by allowing
+   contributors to focus on the relevant tests only.
 
 # Challenges and Solutions
 
