@@ -76,6 +76,7 @@ EXPOSE 22
 
 # Start the SSH service
 CMD ["/usr/sbin/sshd", "-D"]
+
 ```
 
 # Challenges with Nested Containers
@@ -135,7 +136,7 @@ backslashes `(\)` before any single quotes found in the string, allowing
 commands containing single quotes to be interpreted correctly by the shell:
 
 ```bash
-# Escape (i.e. adds a '\' before) all single quotes. This is useful when we want
+# Escape (i.e. adds a '\\' before) all single quotes. This is useful when we want
 # to make sure that a single quote `'` is interpreted as a literal in character
 # sequences like $'<string>'. For reference, see section 3.1.2.4 of
 # https://www.gnu.org/software/bash/manual/bash.html#Shell-Syntax.
@@ -151,7 +152,7 @@ function str_escape_single_quotes()
 
   [[ -z "$string" ]] && return 22 # EINVAL
 
-  printf '%s' "$string" | sed "s/'/\\\'/g"
+  printf '%s' "$string" | sed "s/'/\\\\\\'/g"
 }
 ```
 
@@ -170,6 +171,7 @@ Here's an example of how this approach is implemented:
 ```bash
 cmd+=" ${inner_container_name} /bin/bash -c $'${inner_container_command}'"
 ```
+
 By using `$''`, the string passed to the container can contain special
 characters without causing problems at runtime. This is especially important
 when working with nested containers, where proper string handling is critical
