@@ -8,7 +8,7 @@ categories:
 - kw-ssh
 ---
 
-`kw-ssh` is a feature in kworkflow that simplifies remote access to machines
+The `kw-ssh` is a feature in kworkflow that simplifies remote access to machines
 via SSH. It allows you to execute commands or bash scripts on a remote machine
 easily. Additionally, this feature supports file and directory transfer between
 local and remote machines.
