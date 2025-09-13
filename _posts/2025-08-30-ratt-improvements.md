@@ -5,6 +5,10 @@ categories:
 - gsoc
 - debian
 - salsa-ci
+project_image: /assets/images/ratt.png
+description: "Contributing to ratt (Debian's testing tool) with new features
+and improvements, enhancing the Debian package testing infrastructure and CI/CD
+workflows."
 ---
 
 When working with Debian packages, ensuring that changes don't break other

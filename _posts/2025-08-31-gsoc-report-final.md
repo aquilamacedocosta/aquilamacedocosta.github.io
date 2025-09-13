@@ -5,6 +5,10 @@ categories:
 - gsoc
 - debian
 - salsa-ci
+project_image: /assets/images/gsoc25_final.png
+description: "Final report for GSoC 2025 project focused on enhancing Salsa CI
+infrastructure, improving Debian package testing and continuous integration
+workflows."
 ---
 
 This summer I had the opportunity to participate in **Google Summer of Code

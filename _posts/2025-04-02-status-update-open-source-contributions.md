@@ -3,6 +3,10 @@ title: Status update, my contributions to open source in March 2025
 date: 2025-04-02 10:30:00
 categories:
 - open-source
+project_image: /assets/images/opensource_contrib.png
+description: "A comprehensive overview of my open-source contributions in March
+2025, highlighting ongoing work on kworkflow and other projects in the Linux
+kernel development ecosystem."
 ---
 
 For a long time, I've wanted to make writing blog posts a regular thing about
