@@ -1,0 +1,57 @@
+{% assign posts = site.posts %}
+{% if site.paginate > 0 %}{% assign posts = paginator.posts %}{% endif %}
+
+<section id="projects" class="projects-section">
+  <h2 class="projects-title">Projects</h2>
+  <div class="projects-grid">
+    {% for post in posts %}
+      <a href="{{ post.url | relative_url }}" class="project-card-link" itemscope itemtype="http://schema.org/Article">
+        <link itemprop="mainEntityOfPage" href="{{ post.url | absolute_url }}">
+        
+        <article class="project-card">
+          <div class="project-image">
+            {% if post.project_image %}
+              <img src="{{ post.project_image | relative_url }}" alt="{{ post.title }}" itemprop="image">
+            {% elsif post.image %}
+              <img src="{{ post.image | relative_url }}" alt="{{ post.title }}" itemprop="image">
+            {% else %}
+              <div class="project-image-placeholder">
+                <i class="fa fa-code"></i>
+              </div>
+            {% endif %}
+          </div>
+          
+          <div class="project-content">
+            <h3 class="project-title" itemprop="name headline">
+              {{ post.title | default: 'Untitled' }}
+            </h3>
+            
+            <div class="project-description" itemprop="description">
+              {% if post.description %}
+                {{ post.description }}
+              {% elsif post.excerpt %}
+                {{ post.excerpt | strip_html | truncate: 120 }}
+              {% else %}
+                {{ post.content | strip_html | truncate: 120 }}
+              {% endif %}
+            </div>
+            
+            <div class="project-meta">
+              <time class="project-date" itemprop="datePublished" datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: site.date_format }}
+              </time>
+              
+              {% if post.categories and post.categories.size > 0 %}
+                <div class="project-tags">
+                  {% for category in post.categories limit: 2 %}
+                    <span class="project-tag">{{ category }}</span>
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      </a>
+    {% endfor %}
+  </div>
+</section>
