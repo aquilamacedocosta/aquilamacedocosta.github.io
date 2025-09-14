@@ -5,11 +5,13 @@ type: about
 
 ![Small Picture](/assets/images/border.png)
 
-My name is Aquila Macedo; I am a Computer Science Student from Brazil. I'm
-completely passionate about free software. In the last two years, my interests
-have gravitated around three things: Operating Systems, Open Source and DevOps.
-My main programming languages are C, GoLang, Bash and Python.
+## Hello! I'm Aquila o/
 
-As a Debian Maintainer, I am actively involved in the Debian packaging
-ecosystem, contributing to multiple package uploads for the Debian Security and
-Ruby teams.
+Brazilian Computer Science student, driven by a passion for free software.
+
+Currently I'm a Debian Maintainer and member of the [Salsa CI
+Team](https://wiki.debian.org/SalsaCI), contributing to the Debian packaging
+ecosystem across the Security, Ruby, Golang, and other teams. **You can find my
+recent contributions on [GitHub](https://github.com/aquilamacedo/),
+[GitLab](https://gitlab.com/aquilamacedo/), and [Salsa
+Debian](https://salsa.debian.org/aquilamacedo).**
