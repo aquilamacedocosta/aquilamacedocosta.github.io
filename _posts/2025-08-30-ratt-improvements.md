@@ -5,7 +5,7 @@ categories:
 - gsoc
 - debian
 - salsa-ci
-project_image: /assets/images/ratt.png
+project_image: /assets/images/logo_ratt.jpg
 description: "Contributing to ratt (Debian's testing tool) with new features
 and improvements, enhancing the Debian package testing infrastructure and CI/CD
 workflows."
@@ -41,7 +41,8 @@ To address this, I introduced the `-direct-rdeps` option, which limits the
 scope to direct reverse build-dependencies only. This significantly reduces the
 rebuild set while still giving meaningful feedback for most changes.
 
-For example, consider the package curl and its binaries:
+For example, consider the package [curl](https://tracker.debian.org/pkg/curl)
+and its binaries:
 
 | Option                              | Reverse Dependencies |
 | ----------------------------------- | -------------------- |
