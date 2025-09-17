@@ -2,9 +2,7 @@
 {% capture open_graph %}
   {% assign default_images = '' | split: '' %}
   {% assign images = page.photos | default: default_images %}
-  {% if page.project_image %}
-    {% assign images = images | unshift: page.project_image %}
-  {% endif %}
+  {% assign primary_image = page.project_image %}
   {% assign page_content = page.content %}
   {% assign description = page.description | default: page.excerpt | default: page_content | default: site.description %}
 
@@ -34,7 +32,7 @@
                             replace: '\n', ' ' %}
   {% endif %}
 
-  {% if images.size == 0 and page_content %}
+  {% if images.size == 0 and primary_image == nil and page_content %}
     {% assign imgs = page_content | strip | split: '<img' | shift %}
     {% for img in imgs %}
       {% assign tmp = img | strip | split: 'src=' | shfit %}
@@ -46,9 +44,20 @@
     {% endfor %}
   {% endif %}
 
-  {% if images.size != 0 %}
+  {% assign final_images = '' | split: '' %}
+  {% if primary_image %}
+    {% assign final_images = final_images | push: primary_image %}
+  {% endif %}
+  {% for image in images %}
+    {% if image != primary_image %}
+      {% assign final_images = final_images | push: image %}
+    {% endif %}
+  {% endfor %}
+
+  {% if final_images.size != 0 %}
     {% assign twitter_card = 'summary_large_image' %}
   {% endif %}
+
 
   {% if description %}
     <meta name="description" content="{{ description }}">
@@ -75,8 +84,8 @@
     <!--newline-->
   {% endif %}
 
-  {% for image in images %}
-    <meta property="og:image" content="{{ image | absolute_url }}">
+  {% for image in final_images %}
+    <meta property="og:image" content="{{ image | absolute_url }}?v={{ site.version }}">
     <!--newline-->
   {% endfor %}
 
@@ -93,8 +102,8 @@
     <!--newline-->
   {% endif %}
 
-  {% if images.size != 0 %}
-    <meta name="twitter:image" content="{{ images[0] | absolute_url }}">
+  {% if final_images.size != 0 %}
+    <meta name="twitter:image" content="{{ final_images[0] | absolute_url }}?v={{ site.version }}">
     <!--newline-->
   {% endif %}
 
@@ -130,4 +139,5 @@
 {% assign lines = open_graph | normalize_whitespace | split: '<!--newline-->' %}
 {% capture open_graph %}{% for line in lines %}
 {{ line | strip }}{% endfor %}{% endcapture %}
+
 
