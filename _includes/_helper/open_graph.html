@@ -2,6 +2,9 @@
 {% capture open_graph %}
   {% assign default_images = '' | split: '' %}
   {% assign images = page.photos | default: default_images %}
+  {% if page.project_image %}
+    {% assign images = images | unshift: page.project_image %}
+  {% endif %}
   {% assign page_content = page.content %}
   {% assign description = page.description | default: page.excerpt | default: page_content | default: site.description %}
 
@@ -43,6 +46,10 @@
     {% endfor %}
   {% endif %}
 
+  {% if images.size != 0 %}
+    {% assign twitter_card = 'summary_large_image' %}
+  {% endif %}
+
   {% if description %}
     <meta name="description" content="{{ description }}">
     <!--newline-->
@@ -69,7 +76,7 @@
   {% endif %}
 
   {% for image in images %}
-    <meta property="og:image" content="{{ image }}">
+    <meta property="og:image" content="{{ image | absolute_url }}">
     <!--newline-->
   {% endfor %}
 
@@ -87,7 +94,7 @@
   {% endif %}
 
   {% if images.size != 0 %}
-    <meta name="twitter:image" content="{{ images[0] }}">
+    <meta name="twitter:image" content="{{ images[0] | absolute_url }}">
     <!--newline-->
   {% endif %}
 
@@ -123,3 +130,4 @@
 {% assign lines = open_graph | normalize_whitespace | split: '<!--newline-->' %}
 {% capture open_graph %}{% for line in lines %}
 {{ line | strip }}{% endfor %}{% endcapture %}
+
