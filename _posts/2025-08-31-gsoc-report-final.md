@@ -218,7 +218,8 @@ perspective of a maintainer running Salsa CI pipelines in practice.
   release.
 
   Thanks to Dylan Aïssi for handling the upload, Sergio Durigan Junior for the
-  review, and Rodrigo Siqueira for suggesting this bug for me to tackle.
+  review, and to Rodrigo Siqueira and Melissa Wen for suggesting this bug for me
+  to tackle.
 
   * [Upload accepted on Debian
   tracker](https://tracker.debian.org/news/1660410/accepted-openvr-2121ds1-1exp1-source-amd64-into-experimental/)
